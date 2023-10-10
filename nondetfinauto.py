@@ -32,13 +32,12 @@ class NFA:
                             edge_labels[(state['id'], 'q' + str(trans))] = sym
         
         edgelist = list(edge_labels.keys())
-        #edgelist.append(('start','q' + str(self.start)))
         labels = {node: node for node in nfa_graph.nodes()}
 
         node_color = ['#CCC' for n in nfa_graph.nodes()]
         node_color[-1] = '#FFF'
         for ind in self.accept:
-            node_color[ind] = '#777'
+            node_color[ind] = '#787'
         
         pos=nx.spring_layout(nfa_graph)
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=edgelist)
@@ -141,10 +140,10 @@ class NFA:
 
         
     def union (self, NFA2):
+        self.desc = '({} U {})'.format(self.desc, NFA2.desc)
+
         for state in NFA2.Q:
             self.Q.append(state)
-
-        self.desc = '({} U {})'.format(self.desc, NFA2.desc)
 
         for i in range(self.nQ + NFA2.nQ):
             self.Q[i]['id'] = 'q' + str(i + 1)
@@ -153,13 +152,12 @@ class NFA:
                     self.Q[i][trans] = [t + self.nQ + 1 for t in self.Q[i][trans] if t >= 0]
                 else: self.Q[i][trans] = [t + 1 for t in self.Q[i][trans] if t >= 0]
 
-        self.start += 1
-        for a in self.accept: a += 1
+        self.accept = [a + 1 for a in self.accept]
         app_acc = [a + self.nQ + 1 for a in NFA2.accept]
         for acc in app_acc:
             self.accept.append(acc)
 
-        self.Q.insert(0, {'id': 'q0', 'e': [self.start, NFA2.start + self.nQ + 1], '0': [], '1': []})
+        self.Q.insert(0, {'id': 'q0', '0': [], '1': [], 'e': [self.start + 1, NFA2.start + self.nQ + 1]})
         self.nQ = self.nQ + NFA2.nQ + 1
         self.start = 0
 
