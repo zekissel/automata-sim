@@ -42,7 +42,7 @@ class NFA:
         node_color = ['#CCC' for n in nfa_graph.nodes()]
         node_color[-1] = '#FFF'
         for ind in self.accept:
-            node_color[ind] = '#787'
+            node_color[ind] = '#898'
         
         pos=nx.spring_layout(nfa_graph)
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=edgelist)
