@@ -71,7 +71,7 @@ class DFA:
 
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=edgelist, arrowsize=13)
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.2, edge_color='#444', edgelist=edgelist0, arrowsize=13)
-        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style='--', edgelist=[('start','q' + str(self.start))])
+        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style=':', edgelist=[('start','q' + str(self.start))])
         nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels, label_pos=0.7)
         nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels_0, label_pos=0.7, font_color='#444')
 

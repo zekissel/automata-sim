@@ -45,14 +45,18 @@ class NFA:
             node_color[ind] = '#898'
         
         pos=nx.spring_layout(nfa_graph)
-        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=edgelist)
-        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, edge_color='#333', alpha=.7, edgelist=e_edgelist)
-        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style='--', edgelist=[('start','q' + str(self.start))])
+
         nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels, label_pos=0.7)
-        nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=e_edge_labels, label_pos=0.7, font_color='#333', alpha=.7)
+        nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=e_edge_labels, label_pos=0.7, font_color='#333', alpha=.8)
+
+        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=edgelist)
+        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style='--', edge_color='#333', alpha=.7, edgelist=e_edgelist)
+        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style=':', edgelist=[('start','q' + str(self.start))])
+
         nx.draw_networkx_labels(nfa_graph, pos, labels, font_size=12)
         nx.draw(nfa_graph,pos, node_color=node_color, alpha=.9)
 
+        plt.figlegend
         plt.show()
 
     
