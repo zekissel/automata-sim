@@ -1,4 +1,5 @@
 from nondetfinauto import NFA
+from detfinauto import DFA
 import copy
 
 class Builder:
@@ -6,13 +7,17 @@ class Builder:
     def __init__(self) -> None:
         pass
 
+    def parseDFA (self, filepath: str) -> DFA:
+        dfa = DFA(filepath=filepath)
+        return dfa
+
     def parseNFA (self, filepath: str) -> NFA:
         nfa = NFA(filepath=filepath)
         return nfa
     
-    def plotNFA (self, nfa: NFA) -> None:
-        print(nfa)
-        nfa.graph()
+    def plot (self, fa: NFA or DFA) -> None:
+        print(fa)
+        fa.graph()
     
     def concatNFA (self, nfaA: NFA, nfaB: NFA) -> NFA:
         ret = copy.deepcopy(nfaA)
