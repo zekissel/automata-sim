@@ -1,0 +1,96 @@
+<tm>
+
+    <desc>shifts all input strings right by one</desc>
+
+    <sigma>0,1,e</sigma>
+    <gamma>0,1,e,_</gamma>
+
+    <!-- number of states (should match # states below) -->
+    <num>4</num>
+    <!-- single index of start state -->
+    <start>0</start>
+
+    <states>
+        <q0>
+            <delta>
+                <read>0</read>
+                <write>_</write>
+                <tape>R</tape>
+                <next>1</next>
+            </delta>
+            <delta>
+                <read>1</read>
+                <write>_</write>
+                <tape>R</tape>
+                <next>2</next>
+            </delta>
+            <delta>
+                <read>_</read>
+                <write>_</write>
+                <tape>L</tape>
+                <next>-1</next>
+            </delta>
+        </q0>
+        <q1>
+            <delta>
+                <read>0</read>
+                <write>0</write>
+                <tape>R</tape>
+                <next>1</next>
+            </delta>
+            <delta>
+                <read>1</read>
+                <write>0</write>
+                <tape>R</tape>
+                <next>2</next>
+            </delta>
+            <delta>
+                <read>_</read>
+                <write>0</write>
+                <tape>L</tape>
+                <next>3</next>
+            </delta>
+        </q1>
+        <q2>
+            <delta>
+                <read>0</read>
+                <write>1</write>
+                <tape>R</tape>
+                <next>1</next>
+            </delta>
+            <delta>
+                <read>1</read>
+                <write>1</write>
+                <tape>R</tape>
+                <next>2</next>
+            </delta>
+            <delta>
+                <read>_</read>
+                <write>1</write>
+                <tape>L</tape>
+                <next>3</next>
+            </delta>
+        </q2>
+        <q3>
+            <delta>
+                <read>0</read>
+                <write>0</write>
+                <tape>L</tape>
+                <next>3</next>
+            </delta>
+            <delta>
+                <read>1</read>
+                <write>1</write>
+                <tape>L</tape>
+                <next>3</next>
+            </delta>
+            <delta>
+                <read>_</read>
+                <write>_</write>
+                <tape>L</tape>
+                <next>-1</next>
+            </delta>
+        </q3>
+    </states>
+
+</tm>

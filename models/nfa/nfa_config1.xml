@@ -1,0 +1,50 @@
+<nfa>
+    <!-- natural language description of DFA -->
+    <desc>0</desc>
+    <!-- comma separated list of symbols in language -->
+    <sigma>0,1,e</sigma>
+
+    <!-- number of states (should match # states below) -->
+    <num>2</num>
+
+    <!-- single index of start state -->
+    <start>0</start>
+    <!-- comma separated list of indexes of accept states -->
+    <accept>1</accept>
+
+    <!-- transition functions must include all states, even unreachable ones -->
+    <!-- num. of [qX] must match <num> tag above -->
+        <!-- output is comma seperated list -->
+        <!-- use -1 for empty set, e for epsilon (empty string) -->
+    <states>
+        <q0>
+            <trans>
+                <input>0</input>
+                <output>1</output>
+            </trans>
+            <trans>
+                <input>1</input>
+                <output>-1</output>
+            </trans>
+            <trans>
+                <input>e</input>
+                <output>-1</output>
+            </trans>
+        </q0>
+        <q1>
+            <trans>
+                <input>0</input>
+                <output>-1</output>
+            </trans>
+            <trans>
+                <input>1</input>
+                <output>-1</output>
+            </trans>
+            <trans>
+                <input>e</input>
+                <output>-1</output>
+            </trans>
+        </q1>
+    </states>
+
+</nfa>
