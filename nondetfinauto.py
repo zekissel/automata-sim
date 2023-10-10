@@ -4,19 +4,21 @@ import matplotlib.pyplot as plt
 
 class NFA:
 
-    def __init__(self, desc=None, sigma=[], Q=[], nQ=0, start=None, accept=[]):
-        self.desc = desc
-        self.sigma = sigma
-        self.Q = Q
-        self.nQ = nQ
-        self.start = start
-        self.accept = accept
+    def __init__(self, nfa=None, filepath=None):
+        if type(nfa) == NFA:
+            self.desc = nfa.desc
+            self.sigma = nfa.sigma
+            self.Q = nfa.Q
+            self.nQ = nfa.nQ
+            self.start = nfa.start
+            self.accept = nfa.accept
+        elif filepath is not None:
+            self.parse_from_xml(filepath=filepath)
 
     def __repr__(self) -> str:
         return "NFA ({})\n[s: {}; a: {}]: \n{}".format(self.desc, self.start, self.accept, '\n'.join([str(s) for s in self.Q]))
     
     def graph (self):
-        
         nfa_graph = nx.DiGraph()
 
         nodes = [state['id'] for state in self.Q]
@@ -42,7 +44,7 @@ class NFA:
         pos=nx.spring_layout(nfa_graph)
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=edgelist)
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style='--', edgelist=[('start','q' + str(self.start))])
-        nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels)
+        nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels, label_pos=0.7)
         nx.draw_networkx_labels(nfa_graph, pos, labels, font_size=12, font_color="black")
         nx.draw(nfa_graph,pos, node_color=node_color, alpha=.9)
 
@@ -184,15 +186,9 @@ class NFA:
 
 if __name__ == '__main__':
 
-    nfa = NFA()
-    nfa.parse_from_xml('models/nfa/nfa_config.xml')
+    nfa = NFA(filepath='models/nfa/nfa_config.xml')
+    nfa0 = NFA(filepath='models/nfa/nfa_config0.xml')
+    nfa.star()
+    nfa.union(nfa0)
     print(nfa.__repr__())
-    print(nfa.process_string('001'))
-    print(nfa.process_string('110'))
-    print(nfa.process_string('01'))
-
-    nfa1 = NFA()
-    nfa1.parse_from_xml('models/nfa/nfa_config1.xml')
-    nfa1.star()
-    print(nfa1.__repr__())
-    print(nfa1.process_string('0000'))
+    print(nfa.process_string('0'))
