@@ -32,7 +32,7 @@ class NFA:
                             edge_labels[(state['id'], 'q' + str(trans))] = sym
         
         edgelist = list(edge_labels.keys())
-        edgelist.append(('start','q' + str(self.start)))
+        #edgelist.append(('start','q' + str(self.start)))
         labels = {node: node for node in nfa_graph.nodes()}
 
         node_color = ['#CCC' for n in nfa_graph.nodes()]
@@ -42,6 +42,7 @@ class NFA:
         
         pos=nx.spring_layout(nfa_graph)
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=edgelist)
+        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style='--', edgelist=[('start','q' + str(self.start))])
         nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels)
         nx.draw_networkx_labels(nfa_graph, pos, labels, font_size=12, font_color="black")
         nx.draw(nfa_graph,pos, node_color=node_color, alpha=.9)
