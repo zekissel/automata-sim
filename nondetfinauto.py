@@ -25,15 +25,18 @@ class NFA:
         nodes.append('start')
         nfa_graph.add_nodes_from(nodes)
 
+        e_edge_labels = {}
         edge_labels = {}
         for state in self.Q:
             for sym in self.sigma:
                 if (sym in state.keys()):
                     for trans in state[sym]:
                         if (trans >= 0):
-                            edge_labels[(state['id'], 'q' + str(trans))] = sym
+                            if (sym == 'e'): e_edge_labels[(state['id'], 'q' + str(trans))] = 'ε'
+                            else: edge_labels[(state['id'], 'q' + str(trans))] = sym
         
         edgelist = list(edge_labels.keys())
+        e_edgelist = list(e_edge_labels.keys())
         labels = {node: node for node in nfa_graph.nodes()}
 
         node_color = ['#CCC' for n in nfa_graph.nodes()]
@@ -43,9 +46,11 @@ class NFA:
         
         pos=nx.spring_layout(nfa_graph)
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=edgelist)
+        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, edge_color='#333', alpha=.7, edgelist=e_edgelist)
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style='--', edgelist=[('start','q' + str(self.start))])
         nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels, label_pos=0.7)
-        nx.draw_networkx_labels(nfa_graph, pos, labels, font_size=12, font_color="black")
+        nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=e_edge_labels, label_pos=0.7, font_color='#333', alpha=.7)
+        nx.draw_networkx_labels(nfa_graph, pos, labels, font_size=12)
         nx.draw(nfa_graph,pos, node_color=node_color, alpha=.9)
 
         plt.show()
