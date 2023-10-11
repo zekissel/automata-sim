@@ -1,5 +1,6 @@
 from nondetfinauto import NFA
 from detfinauto import DFA
+from gennondetfinauto import GNFA
 import copy
 
 class Builder:
@@ -18,6 +19,14 @@ class Builder:
     def plot (self, fa: NFA or DFA) -> None:
         print(fa)
         fa.graph()
+
+
+
+    def generalize(self, dfa: DFA) -> GNFA:
+        gen = copy.deepcopy(dfa)
+        return gen.convertGNFA()
+
+
     
     def concatNFA (self, nfaA: NFA, nfaB: NFA) -> NFA:
         ret = copy.deepcopy(nfaA)

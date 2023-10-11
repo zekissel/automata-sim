@@ -1,3 +1,4 @@
+from gennondetfinauto import GNFA
 from lxml import etree
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -16,7 +17,7 @@ class DFA:
             self.parse_from_xml(filepath=filepath)
 
     def __repr__(self) -> str:
-        return "NFA ({})\n[s: {}; a: {}]: \n{}".format(self.desc, self.start, self.accept, '\n'.join([str(s) for s in self.Q]))
+        return "NFA {}\n[s: {}; a: {}]: \n{}".format(self.desc, self.start, self.accept, '\n'.join([str(s) for s in self.Q]))
     
     def graph (self):
         nfa_graph = nx.DiGraph()
@@ -76,6 +77,27 @@ class DFA:
         nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels_0, label_pos=0.7, font_color='#444')
 
         plt.show()
+
+    def convertGNFA (self) -> GNFA:
+        if self.Q is None:
+            raise Exception('DFA must be initialized before converting to GNFA')
+        
+        mockQ = [state for state in self.Q]
+        for state in mockQ: 
+            state['e'] = []
+            for sym in self.sigma:
+                state[sym] = [state[sym]]
+        for aind in self.accept: mockQ[aind]['e'].append('a')
+        mockQ = [{'id':'s','0':[],'1':[],'e':[self.start]}] + mockQ + [{'id':'a','0':[],'1':[],'e':[]}]
+
+        gnfa = GNFA(d=self.desc, E=self.sigma + ['e'], Q=mockQ, nQ=self.nQ + 2, s=0, a=[self.nQ + 1])
+
+        return gnfa
+
+        #states = [s['id'] for s in self.Q]
+        #self.Q = [{'id': 's', '0': [], '1': [], 'e': [self.start]}] + self.Q + \
+        #    [{'id': 'a', '0': [], '1': [], 'e': []}]
+        #rem = input('Enter state ID to remove ({}): '.format(', '.join(states)))
     
 
     def parse_from_xml (self, filepath: str):

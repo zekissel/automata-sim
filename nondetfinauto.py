@@ -4,19 +4,19 @@ import matplotlib.pyplot as plt
 
 class NFA:
 
-    def __init__(self, nfa=None, filepath=None):
-        if type(nfa) == NFA:
-            self.desc = nfa.desc
-            self.sigma = nfa.sigma
-            self.Q = nfa.Q
-            self.nQ = nfa.nQ
-            self.start = nfa.start
-            self.accept = nfa.accept
+    def __init__(self, d=None, E=[], Q=[], nQ=0, s=None, a=[], filepath=None):
+        if d is not None and E != [] and Q != [] and nQ > 0 and a != []:
+            self.desc = d
+            self.sigma = E
+            self.Q = Q
+            self.nQ = nQ
+            self.start = s
+            self.accept = a
         elif filepath is not None:
             self.parse_from_xml(filepath=filepath)
 
     def __repr__(self) -> str:
-        return "NFA ({})\n[s: {}; a: {}]: \n{}".format(self.desc, self.start, self.accept, '\n'.join([str(s) for s in self.Q]))
+        return "NFA {}\n[s: {}; a: {}]: \n{}".format(self.desc, self.start, self.accept, '\n'.join([str(s) for s in self.Q]))
     
     def graph (self):
         nfa_graph = nx.DiGraph()
@@ -51,7 +51,10 @@ class NFA:
 
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=edgelist)
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style='--', edge_color='#333', alpha=.7, edgelist=e_edgelist)
-        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style=':', edgelist=[('start','q' + str(self.start))])
+
+        q0 = 'q' + str(self.start)
+        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style=':', edgelist=[('start', q0)])
+            
 
         nx.draw_networkx_labels(nfa_graph, pos, labels, font_size=12)
         nx.draw(nfa_graph,pos, node_color=node_color, alpha=.9)
