@@ -16,7 +16,7 @@ class Builder:
         nfa = NFA(filepath=filepath)
         return nfa
     
-    def plot (self, fa: NFA or DFA) -> None:
+    def plot (self, fa: NFA or DFA or GNFA) -> None:
         print(fa)
         fa.graph()
 
@@ -25,6 +25,12 @@ class Builder:
     def generalize(self, dfa: DFA) -> GNFA:
         gen = copy.deepcopy(dfa)
         return gen.convertGNFA()
+    
+    def collapseGNFA(self, gnfa: GNFA) -> GNFA:
+        while gnfa.nQ > 2:
+            gnfa.collapse()
+            self.plot(gnfa)
+        return gnfa
 
 
     

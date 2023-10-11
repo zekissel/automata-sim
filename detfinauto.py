@@ -88,16 +88,11 @@ class DFA:
             for sym in self.sigma:
                 state[sym] = [state[sym]]
         for aind in self.accept: mockQ[aind]['e'].append('a')
-        mockQ = [{'id':'s','0':[],'1':[],'e':[self.start]}] + mockQ + [{'id':'a','0':[],'1':[],'e':[]}]
+        mockQ = mockQ + [{'id':'s','0':[],'1':[],'e':[self.start]}] + [{'id':'a','0':[],'1':[],'e':[]}]
 
-        gnfa = GNFA(d=self.desc, E=self.sigma + ['e'], Q=mockQ, nQ=self.nQ + 2, s=0, a=[self.nQ + 1])
+        gnfa = GNFA(d=self.desc, E=self.sigma + ['e'], Q=mockQ, nQ=self.nQ + 2, s=self.nQ, a=[self.nQ + 1])
 
         return gnfa
-
-        #states = [s['id'] for s in self.Q]
-        #self.Q = [{'id': 's', '0': [], '1': [], 'e': [self.start]}] + self.Q + \
-        #    [{'id': 'a', '0': [], '1': [], 'e': []}]
-        #rem = input('Enter state ID to remove ({}): '.format(', '.join(states)))
     
 
     def parse_from_xml (self, filepath: str):
