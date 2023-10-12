@@ -26,24 +26,22 @@ class GNFA:
             if (sym in self.Q[index].keys()):
                 for t in self.Q[index][sym]:
                     if (t not in receiver.keys()): receiver[t] = [sym]
-                    else: receiver.append(sym)
+                    else: receiver[t].append(sym)
 
         for i, state in enumerate(self.Q):
             if i >= self.nQ - 2: break
             for sym in self.sigma:
                 if (sym in state.keys() and index in state[sym]):
-                    if ('s' not in sender.keys()): sender['s'] = []
-                    if (i not in sender.keys()): sender[i] = []
+                    if ('s' not in sender.keys() and state['id'] == 's'): sender['s'] = []
+                    elif (i not in sender.keys()): sender[i] = []
                     if state['id'] == 's': sender['s'].append(sym)
                     else: sender[i].append(sym)
 
         for sym in self.sigma:
-            if sym in self.Q[self.nQ - 1].keys() and index in self.Q[self.nQ - 1][sym]:
-                if ('a' not in receiver.keys()): receiver['a'] = []
-                receiver['a'].append(sym)
             if sym in self.Q[self.start].keys() and index in self.Q[self.start][sym]:
                 if ('s' not in sender.keys()): sender['s'] = []
                 sender['s'].append(sym)
+                print(sym + ' SYMBOL! ')
 
 
         s_ind = [s for s in sender.keys()]
@@ -58,6 +56,9 @@ class GNFA:
 
         sender = {ind: sym for ind, sym in sender.items() if ind != index}
         receiver = {ind: sym for ind, sym in receiver.items() if ind != index}
+
+        print(sender)
+        print(receiver)
 
         new_trans = {}
         for s in sender.keys():
@@ -79,18 +80,18 @@ class GNFA:
                 else: star = ''
 
                 new_sym = send + star + receive
-                new_sym = new_sym.replace('e', '')
+                if len(new_sym) > 1: new_sym = new_sym.replace('e', '')
                 new_trans[str(s) + str(r)] = new_sym
 
         for s in new_trans.values():
-            self.sigma.append(s)
+            if (s != ''): self.sigma.append(s)
 
         for t, s in new_trans.items():
             if 's' in list(t) and 'a' in list(t):
-                self.Q[self.start][s] = [self.accept[0]]
+                self.Q[self.start][s] = ['a']
             elif 's' in list(t) or 'a' in list(t):
                 if 's' in list(t): self.Q[self.start][s] = [int(list(t)[1])]
-                else: self.Q[int(list(t)[0])][s] = [self.accept[0]]
+                else: self.Q[int(list(t)[0])][s] = ['a']
             else:
                 ind = [int(t) for t in list(t)]
                 self.Q[ind[0]][s] = [ind[1]]
@@ -102,18 +103,28 @@ class GNFA:
                 if (sym in state.keys()):
                     trans = state[sym]
                     for i, t in enumerate(trans):
-                        if type(t) == int and t != index: trans[i] = t - 1
+                        if type(t) == int and t != index and i >= index: trans[i] = t - 1
                         elif (type(t) == int and t == index): del trans[i]
                         else: 
                             for s in state.keys():
                                 if (s != 'id' and s != 'e') and 'a' in state[s]: \
                                 state['e'] = []
+                                break
         self.nQ -= 1
         self.start -= 1
         self.accept = [a - 1 for a in self.accept]
 
+        start_clean = False
         for s in self.Q[self.start].keys():
-            if (s != 'id' and s != 'e') and 'a' in self.Q[self.start][s]: self.Q[self.start]['e'] = []
+            if (s != 'id' and s != 'e') and ('a' in self.Q[self.start][s]): start_clean = True
+        if start_clean: self.Q[self.start]['e'] = []
+
+        cleanup = []
+        for i, state in enumerate(self.Q):
+            for sym in state.keys():
+                if sym != 'id' and state[sym] == []:
+                    cleanup.append((i, sym))
+        for ind, sym in cleanup: del self.Q[ind][sym]
 
         
     def graph (self):
@@ -135,13 +146,17 @@ class GNFA:
 
                             elif (sym != 'e' and (state['id'], temp_n[trans]) not in edge_labels.keys()): edge_labels[(state['id'], temp_n[trans])] = sym
 
-                            else: edge_labels[(state['id'], temp_n[trans])] = sym + 'U' + edge_labels[(state['id'], temp_n[trans])]
+                            elif (sym != 'e'): 
+                                if edge_labels[(state['id'], temp_n[trans])] != sym:
+                                    edge_labels[(state['id'], temp_n[trans])] = edge_labels[(state['id'], temp_n[trans])] + 'U' + sym
                         else:
                             if (sym == 'e' and (state['id'], 'a') not in e_edge_labels.keys()): e_edge_labels[(state['id'], 'a')] = 'ε'
 
                             elif (sym != 'e' and (state['id'], 'a') not in edge_labels.keys()): edge_labels[(state['id'], 'a')] = sym
 
-                            else: edge_labels[(state['id'], 'a')] = sym + 'U' + edge_labels[(state['id'], 'a')]
+                            elif (sym != 'e'): 
+                                if edge_labels[(state['id'], 'a')] != sym:
+                                    edge_labels[(state['id'], 'a')] = edge_labels[(state['id'], 'a')] + 'U' + sym
         
         edgelist = list(edge_labels.keys())
         edgeliste = list(e_edge_labels.keys())

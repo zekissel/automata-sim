@@ -26,13 +26,22 @@ class Builder:
         gen = copy.deepcopy(dfa)
         return gen.convertGNFA()
     
-    def collapseGNFA(self, gnfa: GNFA) -> GNFA:
+    def collapseGNFA(self, gnfa: GNFA):
         while gnfa.nQ > 2:
             gnfa.collapse()
+    
+    def proceduralCollapse(self, gnfa: GNFA) -> GNFA:
+        gnfa = copy.deepcopy(gnfa)
+        self.plot(gnfa)
+        while gnfa.nQ > 2:
+            try:
+                ind = int(input('Enter index of state to remove (0 - {}): '.format(gnfa.nQ - 3)))
+            except:
+                raise Exception('Must enter numerical index in provided range')
+            gnfa.collapse(index=ind)
             self.plot(gnfa)
+
         return gnfa
-
-
     
     def concatNFA (self, nfaA: NFA, nfaB: NFA) -> NFA:
         ret = copy.deepcopy(nfaA)
