@@ -82,10 +82,7 @@ class GNFA:
                 if state['id'] != trans[0]: continue
                 for edge in state.keys():
                     if edge == 'id': continue
-                    if edge == trans: 
-                        uni = state[edge]
-                        print(edge)
-                        print(uni)
+                    if edge == trans: uni = state[edge]
                     if edge[1] == remID: rem.append((i, edge))
                 
                 if len(uni) > 0: state[trans] = '(' + sym + 'U' + uni + ')'
