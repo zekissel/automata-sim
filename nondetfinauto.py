@@ -18,7 +18,7 @@ class NFA:
     def __repr__(self) -> str:
         return "NFA {}\n[s: {}; a: {}]: \n{}".format(self.desc, self.start, self.accept, '\n'.join([str(s) for s in self.Q]))
     
-    def graph (self):
+    def graph (self, layout='spring'):
 
         edge_labels = {}
         s_edge_labels = {}
@@ -49,7 +49,8 @@ class NFA:
 
         nfa_graph = nx.DiGraph()
         nfa_graph.add_nodes_from(nodes)
-        pos=nx.spring_layout(nfa_graph)
+        if layout == 'spring': pos=nx.spring_layout(nfa_graph)
+        else: pos=nx.planar_layout(nfa_graph)
         
         nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=s_edge_labels, label_pos=1, font_size=10, verticalalignment='bottom', alpha=.8)
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=s_edgelist)

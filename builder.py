@@ -6,7 +6,10 @@ import copy
 class Builder:
 
     def __init__(self) -> None:
-        pass
+        self.g_layout = 'spring'
+
+    def config_layout(self, layout: str):
+        self.g_layout = layout
 
     def parseDFA (self, filepath: str) -> DFA:
         dfa = DFA(filepath=filepath)
