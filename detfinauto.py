@@ -1,4 +1,3 @@
-from gennondetfinauto import GNFA
 from lxml import etree
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -58,7 +57,6 @@ class DFA:
         sedgelist0 = list(self_edge_0.keys())
 
         edgelist = [e for e in edgelist if e not in sedgelist]
-        print(edgelist)
         edgelist0 = [e for e in edgelist0 if e not in sedgelist0]
         
         pos=nx.spring_layout(nfa_graph)

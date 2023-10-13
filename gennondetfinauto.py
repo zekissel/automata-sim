@@ -13,7 +13,12 @@ class GNFA:
             self.accept = a
             
             self.shift()
-                
+    
+
+    # convert states transitions from { 'symbol': 'target_index' }
+    #                              to { (cur_id, target_id): 'symbol' }
+    # add state 's' with ε transition to start state
+    # add state 'a' receiving ε trans from all accept states
     def shift (self):
         for s in self.Q: 
             if s['id'] == 's': return
@@ -44,18 +49,23 @@ class GNFA:
     def __repr__(self) -> str:
         return "GNFA {}\n{}".format(self.desc, '\n'.join([str(s) for s in self.Q]))
 
+
+    # remove state at specified index from automata
     def collapse(self, index=1):
         if (self.nQ <= 2): raise Exception('GNFA fully collapsed')
         if index < 1 or index >= self.nQ - 1: raise Exception('Index out of range for removal')
         
+        # collect all transitions into and out of state at index
+        # star is the symbol (if any) of the self edge at this index
         enter = {}
         star = ''
         exit = {}
 
         for trans, lab in self.Q[index].items():
             if trans == 'id': continue
-            if trans[0] == trans[1] and len(lab) > 1 and lab[0] != '(': star = '(' + lab + ')*'
-            elif trans[0] == trans[1]: star = lab + '*'
+            if trans[0] == trans[1]:
+                if len(lab) > 1 and ')' in lab[2:-2]: star = '(' + lab + ')*'
+                else: star = lab + '*'
             else: exit[trans] = lab
 
         remID = self.Q[index]['id']
@@ -66,15 +76,20 @@ class GNFA:
                 if trans[1] == remID: enter[trans] = lab
 
 
+        # build new transitions:
+        # x enter states, y exit states = x*y new trans
         new_trans = {}
         for tran0 in enter.keys():
             for tran1 in exit.keys():
                 label = enter[tran0] + star + exit[tran1]
-                label = label.replace('e', '')
+                if len(label) > 1: label = label.replace('e', '')
 
                 edge = (tran0[0], tran1[1])
                 new_trans[edge] = label
 
+        # update Q with new transitions
+        # union if edge already exists
+        # remove transitions to index state from persistings states
         rem = []
         for trans, sym in new_trans.items():
             for i, state in enumerate(self.Q):
@@ -97,10 +112,6 @@ class GNFA:
 
         
     def graph (self):
-        nfa_graph = nx.DiGraph()
-
-        nodes = [state['id'] for state in self.Q]
-        nfa_graph.add_nodes_from(nodes)
 
         edge_labels = {}
         edge_labels_e = {}
@@ -108,19 +119,22 @@ class GNFA:
         for s in self.Q:
             for e, l in s.items():
                 if e == 'id': continue
-                if l == 'e': edge_labels_e[e] = l
+                if l == 'e': edge_labels_e[e] = 'ε'
                 elif e[0] == e[1]: edge_labels_self[e] = l + '\n\n'
                 else: edge_labels[e] = l
-
 
         edgelist = list(edge_labels.keys())
         edgelist_e = list(edge_labels_e.keys())
         s_edgelist = list(edge_labels_self.keys())
-        labels = {node: node for node in nfa_graph.nodes()}
 
-        node_color = ['#CCC' for _ in nfa_graph.nodes()]
+        nodes = [state['id'] for state in self.Q]
+        labels = {node: node for node in nodes}
+        node_color = ['#CCC' for _ in nodes]
         node_color[self.accept] = '#898'
-        
+
+
+        nfa_graph = nx.DiGraph()
+        nfa_graph.add_nodes_from(nodes)
         pos=nx.spring_layout(nfa_graph)
         
         nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels_self, label_pos=1, font_size=10, verticalalignment='bottom', alpha=.8)
