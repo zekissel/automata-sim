@@ -19,54 +19,60 @@ class NFA:
         return "NFA {}\n[s: {}; a: {}]: \n{}".format(self.desc, self.start, self.accept, '\n'.join([str(s) for s in self.Q]))
     
     def graph (self):
-        nfa_graph = nx.DiGraph()
 
-        nodes = [state['id'] for state in self.Q]
-        nodes.append('start')
-        nfa_graph.add_nodes_from(nodes)
-
-        e_edge_labels = {}
         edge_labels = {}
+        s_edge_labels = {}
+        e_edge_labels = {}
         for state in self.Q:
             for sym in self.sigma:
                 if (sym in state.keys()):
                     for trans in state[sym]:
                         if (trans >= 0):
-                            if (sym == 'e'): e_edge_labels[(state['id'], 'q' + str(trans))] = 'ε'
+                            tid = 'q' + str(trans)
+                            if sym == 'e': e_edge_labels[(state['id'], tid)] = 'ε'
+                            elif state['id'] == tid: s_edge_labels[(tid, tid)] = sym
                             else: edge_labels[(state['id'], 'q' + str(trans))] = sym
         
         edgelist = list(edge_labels.keys())
+        s_edgelist = list(s_edge_labels.keys())
         e_edgelist = list(e_edge_labels.keys())
-        labels = {node: node for node in nfa_graph.nodes()}
 
-        node_color = ['#CCC' for n in nfa_graph.nodes()]
+
+        nodes = [state['id'] for state in self.Q]
+        nodes.append('start')
+        labels = {node: node for node in nodes}
+
+        node_color = ['#CCC' for _ in nodes]
         node_color[-1] = '#FFF'
         for ind in self.accept:
             node_color[ind] = '#898'
-        
+
+        nfa_graph = nx.DiGraph()
+        nfa_graph.add_nodes_from(nodes)
         pos=nx.spring_layout(nfa_graph)
+        
+        nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=s_edge_labels, label_pos=1, font_size=10, verticalalignment='bottom', alpha=.8)
+        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=s_edgelist)
 
         nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels, label_pos=0.7)
-        nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=e_edge_labels, label_pos=0.7, font_color='#333', alpha=.8)
+        nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=e_edge_labels, label_pos=0.7, font_color='#444')
 
-        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=edgelist)
+        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=edgelist, arrowsize=13)
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style='--', edge_color='#333', alpha=.7, edgelist=e_edgelist)
 
         q0 = 'q' + str(self.start)
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style=':', edgelist=[('start', q0)])
-            
 
         nx.draw_networkx_labels(nfa_graph, pos, labels, font_size=12)
         nx.draw(nfa_graph,pos, node_color=node_color, alpha=.9)
 
-        plt.figlegend
         plt.show()
 
-    
 
     def parse_from_xml (self, filepath: str):
         tree = etree.parse(filepath)
         root = tree.getroot()
+        if root.tag != 'nfa': raise Exception('NFA root tag must be <nfa>')
 
         self.desc = root.find('desc').text
         self.sigma = (root.find('sigma').text).split(',')
@@ -103,8 +109,7 @@ class NFA:
 
     def process_string (self, input: str) -> bool:
         
-        state_tree = []
-        state_tree.append([self.start])
+        state_tree = [[self.start]]
 
         test_sigma = [sym for sym in self.sigma if sym != 'e']
         for sym in list(input):
