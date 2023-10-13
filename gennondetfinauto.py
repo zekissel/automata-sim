@@ -4,127 +4,99 @@ import matplotlib.pyplot as plt
 class GNFA:
 
     def __init__(self, d=None, E=[], Q=[], nQ=0, s=None, a=[]) -> None:
-        if d is not None and E != [] and Q != [] and nQ > 0 and a != []:
+        if d is not None and E != [] and Q != [] and nQ > 0:
             self.desc = d
             self.sigma = E
             self.Q = Q
             self.nQ = nQ
             self.start = s
             self.accept = a
+            
+            self.shift()
+                
+    def shift (self):
+        for s in self.Q: 
+            if s['id'] == 's': return
+
+        zero = self.sigma[0]
+        one = self.sigma[1]
+
+        newQ = [{'id':'s', ('s', self.Q[self.start]['id']):'e'}]
+        for i, state in enumerate(self.Q):
+            newS = {'id': state['id']}
+            if state[zero] == state[one]:
+                newS[(state['id'], 'q' + state[zero])] = zero + 'U' + one
+            else:
+                newS[(state['id'], 'q' + str(state[zero]))] = zero
+                newS[(state['id'], 'q' + str(state[one]))] = one
+
+            if i in self.accept: newS[(state['id'], 'a')] = 'e'
+            newQ.append(newS)
+        newQ.append({'id':'a'})
+        
+        self.Q = newQ
+        self.nQ = len(newQ)
+        self.sigma.append('e')
+        self.start = 0
+        self.accept = self.nQ - 1
+
 
     def __repr__(self) -> str:
         return "GNFA {}\n{}".format(self.desc, '\n'.join([str(s) for s in self.Q]))
 
-    def collapse(self, index=0):
-        if (self.nQ <= 2):
-            raise Exception('GNFA fully collapsed')
+    def collapse(self, index=1):
+        if (self.nQ <= 2): raise Exception('GNFA fully collapsed')
+        if index < 1 or index >= self.nQ - 1: raise Exception('Index out of range for removal')
         
-        sender = {}
-        receiver = {}
+        enter = {}
+        star = ''
+        exit = {}
 
-        for sym in self.sigma:
-            if (sym in self.Q[index].keys()):
-                for t in self.Q[index][sym]:
-                    if (t not in receiver.keys()): receiver[t] = [sym]
-                    else: receiver[t].append(sym)
+        for trans, lab in self.Q[index].items():
+            if trans == 'id': continue
+            if trans[0] == trans[1] and len(lab) > 1 and lab[0] != '(': star = '(' + lab + ')*'
+            elif trans[0] == trans[1]: star = lab + '*'
+            else: exit[trans] = lab
 
+        remID = self.Q[index]['id']
         for i, state in enumerate(self.Q):
-            if i >= self.nQ - 2: break
-            for sym in self.sigma:
-                if (sym in state.keys() and index in state[sym]):
-                    if ('s' not in sender.keys() and state['id'] == 's'): sender['s'] = []
-                    elif (i not in sender.keys()): sender[i] = []
-                    if state['id'] == 's': sender['s'].append(sym)
-                    else: sender[i].append(sym)
+            if i == index: continue
+            for trans, lab in state.items():
+                if trans == 'id': continue
+                if trans[1] == remID: enter[trans] = lab
 
-        for sym in self.sigma:
-            if sym in self.Q[self.start].keys() and index in self.Q[self.start][sym]:
-                if ('s' not in sender.keys()): sender['s'] = []
-                sender['s'].append(sym)
-                print(sym + ' SYMBOL! ')
-
-
-        s_ind = [s for s in sender.keys()]
-        r_ind = [r for r in receiver.keys()]
-        starsym = None
-        if index in s_ind and index in r_ind:
-            starsym = [sym for sym in self.sigma if sym in self.Q[index] and index in self.Q[index][sym]]
-        if starsym is not None:
-            for i, s in enumerate(starsym):
-                if len(s) == 1: starsym[i] = s + '*'
-                else: starsym[i] = "(" + s + ")*"
-
-        sender = {ind: sym for ind, sym in sender.items() if ind != index}
-        receiver = {ind: sym for ind, sym in receiver.items() if ind != index}
-
-        print(sender)
-        print(receiver)
 
         new_trans = {}
-        for s in sender.keys():
-            for r in receiver.keys():
-                if len(sender[s]) > 1: 
-                    sender[s] = [t for t in sender[s] if t != 'e']
-                    send = "(" + 'U'.join(sender[s]) + ")"
-                if len(sender[s]) == 1: send = sender[s][0]
-                elif len(sender[s]) == 0: send = ''
+        for tran0 in enter.keys():
+            for tran1 in exit.keys():
+                label = enter[tran0] + star + exit[tran1]
+                label = label.replace('e', '')
 
-                if len(receiver[r]) > 1: 
-                    receiver[r] = [t for t in receiver[r] if t != 'e']
-                    receive = "(" + 'U'.join(receiver[r]) + ")"
-                if len(receiver[r]) == 1: receive = receiver[r][0]
-                elif len(receiver[r]) == 0: receive = ''
+                edge = (tran0[0], tran1[1])
+                new_trans[edge] = label
 
-                if starsym is not None and len(starsym) == 1: star = starsym[0]
-                elif starsym is not None: star = "(" + 'U'.join(starsym) + ")"
-                else: star = ''
-
-                new_sym = send + star + receive
-                if len(new_sym) > 1: new_sym = new_sym.replace('e', '')
-                new_trans[str(s) + str(r)] = new_sym
-
-        for s in new_trans.values():
-            if (s != ''): self.sigma.append(s)
-
-        for t, s in new_trans.items():
-            if 's' in list(t) and 'a' in list(t):
-                self.Q[self.start][s] = ['a']
-            elif 's' in list(t) or 'a' in list(t):
-                if 's' in list(t): self.Q[self.start][s] = [int(list(t)[1])]
-                else: self.Q[int(list(t)[0])][s] = ['a']
-            else:
-                ind = [int(t) for t in list(t)]
-                self.Q[ind[0]][s] = [ind[1]]
-        
+        rem = []
+        for trans, sym in new_trans.items():
+            for i, state in enumerate(self.Q):
+                uni = ''
+                if state['id'] != trans[0]: continue
+                for edge in state.keys():
+                    if edge == 'id': continue
+                    if edge == trans: 
+                        uni = state[edge]
+                        print(edge)
+                        print(uni)
+                    if edge[1] == remID: rem.append((i, edge))
+                
+                if len(uni) > 0: state[trans] = '(' + sym + 'U' + uni + ')'
+                else: state[trans] = sym
+        for ind in rem: 
+            if ind[1] in self.Q[ind[0]].keys(): del self.Q[ind[0]][ind[1]]
         
         del self.Q[index]
-        for state in self.Q:
-            for sym in self.sigma:
-                if (sym in state.keys()):
-                    trans = state[sym]
-                    for i, t in enumerate(trans):
-                        if type(t) == int and t != index and i >= index: trans[i] = t - 1
-                        elif (type(t) == int and t == index): del trans[i]
-                        else: 
-                            for s in state.keys():
-                                if (s != 'id' and s != 'e') and 'a' in state[s]: \
-                                state['e'] = []
-                                break
+        
         self.nQ -= 1
-        self.start -= 1
-        self.accept = [a - 1 for a in self.accept]
-
-        start_clean = False
-        for s in self.Q[self.start].keys():
-            if (s != 'id' and s != 'e') and ('a' in self.Q[self.start][s]): start_clean = True
-        if start_clean: self.Q[self.start]['e'] = []
-
-        cleanup = []
-        for i, state in enumerate(self.Q):
-            for sym in state.keys():
-                if sym != 'id' and state[sym] == []:
-                    cleanup.append((i, sym))
-        for ind, sym in cleanup: del self.Q[ind][sym]
+        self.accept -= 1
 
         
     def graph (self):
@@ -133,62 +105,37 @@ class GNFA:
         nodes = [state['id'] for state in self.Q]
         nfa_graph.add_nodes_from(nodes)
 
-        temp_n = [s['id'] for s in self.Q]
-
-        e_edge_labels = {}
         edge_labels = {}
-        for state in self.Q:
-            for sym in self.sigma:
-                if (sym in state.keys()):
-                    for trans in state[sym]:
-                        if type(trans) == int:
-                            if (sym == 'e' and (state['id'], temp_n[trans]) not in e_edge_labels.keys()): e_edge_labels[(state['id'], temp_n[trans])] = 'ε'
+        edge_labels_e = {}
+        edge_labels_self = {}
+        for s in self.Q:
+            for e, l in s.items():
+                if e == 'id': continue
+                if l == 'e': edge_labels_e[e] = l
+                elif e[0] == e[1]: edge_labels_self[e] = l + '\n\n'
+                else: edge_labels[e] = l
 
-                            elif (sym != 'e' and (state['id'], temp_n[trans]) not in edge_labels.keys()): edge_labels[(state['id'], temp_n[trans])] = sym
 
-                            elif (sym != 'e'): 
-                                if edge_labels[(state['id'], temp_n[trans])] != sym:
-                                    edge_labels[(state['id'], temp_n[trans])] = edge_labels[(state['id'], temp_n[trans])] + 'U' + sym
-                        else:
-                            if (sym == 'e' and (state['id'], 'a') not in e_edge_labels.keys()): e_edge_labels[(state['id'], 'a')] = 'ε'
-
-                            elif (sym != 'e' and (state['id'], 'a') not in edge_labels.keys()): edge_labels[(state['id'], 'a')] = sym
-
-                            elif (sym != 'e'): 
-                                if edge_labels[(state['id'], 'a')] != sym:
-                                    edge_labels[(state['id'], 'a')] = edge_labels[(state['id'], 'a')] + 'U' + sym
-        
         edgelist = list(edge_labels.keys())
-        edgeliste = list(e_edge_labels.keys())
+        edgelist_e = list(edge_labels_e.keys())
+        s_edgelist = list(edge_labels_self.keys())
         labels = {node: node for node in nfa_graph.nodes()}
 
-        self_edge = {e: l + '\n\n' for e, l in edge_labels.items() if e[0] == e[1]}
-        sedgelist = list(self_edge.keys())
-
-        edge_labels = {e: l for e, l in edge_labels.items() if e not in sedgelist}
-        edgelist = [e for e in edgelist if e not in sedgelist]
-
-        node_color = ['#CCC' for n in nfa_graph.nodes()]
-        for ind in self.accept:
-            node_color[ind] = '#898'
+        node_color = ['#CCC' for _ in nfa_graph.nodes()]
+        node_color[self.accept] = '#898'
         
         pos=nx.spring_layout(nfa_graph)
         
-        nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=self_edge, label_pos=1, font_size=10, verticalalignment='bottom', alpha=.8)
-        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=sedgelist)
-
-        nx.draw_networkx_labels(nfa_graph, pos, labels, font_size=12)
-        nx.draw(nfa_graph,pos, node_color=node_color, alpha=.9)
+        nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels_self, label_pos=1, font_size=10, verticalalignment='bottom', alpha=.8)
+        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=s_edgelist)
 
         nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels, label_pos=0.7)
-        nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=e_edge_labels, label_pos=0.7, font_color='#444')
+        nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels_e, label_pos=0.7, font_color='#444')
 
         nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1.5, edgelist=edgelist, arrowsize=13)
-        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style='--', edge_color='#333', alpha=.7, edgelist=edgeliste)
+        nx.draw_networkx_edges(nfa_graph, pos, connectionstyle='arc3, rad=0.15', width=1, style='--', edge_color='#333', alpha=.7, edgelist=edgelist_e)
 
         nx.draw_networkx_labels(nfa_graph, pos, labels, font_size=12)
         nx.draw(nfa_graph,pos, node_color=node_color, alpha=.9)
-        
 
-        plt.figlegend
         plt.show()

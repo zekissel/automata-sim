@@ -77,22 +77,6 @@ class DFA:
         nx.draw_networkx_edge_labels(nfa_graph, pos, edge_labels=edge_labels_0, label_pos=0.7, font_color='#444')
 
         plt.show()
-
-    def convertGNFA (self) -> GNFA:
-        if self.Q is None:
-            raise Exception('DFA must be initialized before converting to GNFA')
-        
-        mockQ = [state for state in self.Q]
-        for state in mockQ: 
-            state['e'] = []
-            for sym in self.sigma:
-                state[sym] = [state[sym]]
-        for aind in self.accept: mockQ[aind]['e'].append('a')
-        mockQ = mockQ + [{'id':'s','0':[],'1':[],'e':[self.start]}] + [{'id':'a','0':[],'1':[],'e':[]}]
-
-        gnfa = GNFA(d=self.desc, E=self.sigma + ['e'], Q=mockQ, nQ=self.nQ + 2, s=self.nQ, a=[self.nQ + 1])
-
-        return gnfa
     
 
     def parse_from_xml (self, filepath: str):

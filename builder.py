@@ -24,7 +24,7 @@ class Builder:
 
     def generalize(self, dfa: DFA) -> GNFA:
         gen = copy.deepcopy(dfa)
-        return gen.convertGNFA()
+        return GNFA(d=gen.desc, E=gen.sigma, Q=gen.Q, nQ=gen.nQ, s=gen.start, a=gen.accept)
     
     def collapseGNFA(self, gnfa: GNFA):
         while gnfa.nQ > 2:
@@ -35,7 +35,7 @@ class Builder:
         self.plot(gnfa)
         while gnfa.nQ > 2:
             try:
-                ind = int(input('Enter index of state to remove (0 - {}): '.format(gnfa.nQ - 3)))
+                ind = int(input('Enter index of state to remove (0 - {}): '.format(gnfa.nQ - 3))) + 1
             except:
                 raise Exception('Must enter numerical index in provided range')
             gnfa.collapse(index=ind)
