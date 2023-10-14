@@ -11,32 +11,11 @@
     <states>
         <q0>
             <trans>
-                <input>0</input>
-                <output>-1</output>
-            </trans>
-            <trans>
                 <input>1</input>
                 <output>1</output>
             </trans>
-            <trans>
-                <input>e</input>
-                <output>-1</output>
-            </trans>
         </q0>
-        <q1>
-            <trans>
-                <input>0</input>
-                <output>-1</output>
-            </trans>
-            <trans>
-                <input>1</input>
-                <output>-1</output>
-            </trans>
-            <trans>
-                <input>e</input>
-                <output>-1</output>
-            </trans>
-        </q1>
+        <q1></q1>
     </states>
 
 </nfa>

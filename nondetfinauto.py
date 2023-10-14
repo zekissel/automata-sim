@@ -80,7 +80,9 @@ class NFA:
         self.nQ = int(root.find('num').text)
         self.start = int(root.find('start').text)
 
-        acc = (root.find('accept').text).split(',')
+        acc = (root.find('accept').text)
+        if len(acc) > 0: acc = acc.split(',')
+        else: acc = []
         self.accept = [int(s) for s in acc]
 
         delta = list(root.find('states'))
@@ -96,13 +98,20 @@ class NFA:
                 if (trans.find('input').text not in self.sigma):
                     raise Exception('Input symbol not in sigma')
                     
-                output = trans.find('output').text.split(',')
-                output = [int(o) for o in output]
+                output = trans.find('output').text
+                if len(output) > 0: 
+                    output = output.split(',')
+                    output = [int(o) for o in output]
+                else: output = [output]
                 for o in output:
                     if (o >= self.nQ or o < -1):
                         raise Exception('Cannot transition to a state outside of max range')
                     
                 s[trans.find('input').text] = output
+            
+            for sym in self.sigma:
+                if sym not in s.keys():
+                    s[sym] = []
             self.Q.append(s)
 
         return self
@@ -206,7 +215,6 @@ if __name__ == '__main__':
 
     nfa = NFA(filepath='models/nfa/nfa_config.xml')
     nfa0 = NFA(filepath='models/nfa/nfa_config0.xml')
-    nfa.star()
-    nfa.union(nfa0)
-    print(nfa.__repr__())
-    print(nfa.process_string('0'))
+    nfa0.star()
+    print(nfa0.__repr__())
+    print(nfa0.process_string('0'))
