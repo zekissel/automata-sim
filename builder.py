@@ -24,6 +24,10 @@ class Builder:
         fa.graph()
 
 
+    # implement converting NFA to DFA
+    def determine(self, nfa: NFA) -> DFA:
+        det = copy.deepcopy(nfa)
+        return det
 
     def generalize(self, dfa: DFA) -> GNFA:
         gen = copy.deepcopy(dfa)
